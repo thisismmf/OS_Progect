@@ -17,6 +17,16 @@ typedef struct {
 Variable variables[MAX_VARIABLES];
 int numVariables = 0;
 
+// Function to replace the last n characters of a string with '_'
+void maskSensitiveInfo(char *str, int n) {
+    int len = strlen(str);
+    if (n > len) return; // If n is greater than length of string, do nothing
+
+    for (int i = len - n; i < len; i++) {
+        str[i] = '_';
+    }
+}
+
 void printPrompt() {
     char path[MAX_PATH_LENGTH];
     char username[MAX_USERNAME_LENGTH];
@@ -44,14 +54,32 @@ void printPrompt() {
     printf("%s@%s-%s$ ", username, hostname, path);
 }
 
-void parseAndExecuteCommand(char* input) {
+void listDirectory(const char *path) {
+    DIR *dir;
+    struct dirent *entry;
+
+    if (!(dir = opendir(path))) {
+        perror("opendir error");
+        return;
+    }
+
+    while ((entry = readdir(dir)) != NULL) {
+        // Mask sensitive info for files and directories
+        maskSensitiveInfo(entry->d_name, 6);
+        printf("%s\n", entry->d_name);
+    }
+
+    closedir(dir);
+}
+
+void parseAndExecuteCommand(char *input) {
     // Check if the command is to define a local variable
     if (strstr(input, "تنظیمات") != NULL) {
         // Tokenize input to extract the variable name
-        char* token = strtok(input, " تنظیمات\n");
+        char *token = strtok(input, " تنظیمات\n");
 
         if (token != NULL) {
-            char* name = token;
+            char *name = token;
 
             // Search for the variable by name
             int found = 0;
@@ -71,15 +99,15 @@ void parseAndExecuteCommand(char* input) {
         }
     } else if (strstr(input, "تنظیم") != NULL) {
         // Tokenize input to separate the variable name and value
-        char* token = strtok(input, " =تنظیم\n");
+        char *token = strtok(input, " =تنظیم\n");
 
         if (token != NULL) {
-            char* name = token;
+            char *name = token;
 
             // Find the index of the equal sign
             token = strtok(NULL, " =تنظیم\n");
             if (token != NULL) {
-                char* value = token;
+                char *value = token;
 
                 // Store the variable
                 if (numVariables < MAX_VARIABLES) {
@@ -98,22 +126,34 @@ void parseAndExecuteCommand(char* input) {
         } else {
             printf("Invalid syntax\n");
         }
-    } else if (strstr(input, "فهرست") != NULL) {
+    } else if (strstr(input, "فهرست_مخفی") != NULL) {
         // Tokenize input to extract the directory path
-        char* token = strtok(input, " فهرست\n");
+        char *token = strtok(input, " فهرست_مخفی\n");
 
         if (token != NULL) {
-            char* path = token;
+            char *path = token;
+
+            // List directory contents with masked sensitive info
+            listDirectory(path);
+        } else {
+            printf("Invalid syntax\n");
+        }
+    } else if (strstr(input, "فهرست") != NULL) {
+        // Tokenize input to extract the directory path
+        char *token = strtok(input, " فهرست\n");
+
+        if (token != NULL) {
+            char *path = token;
 
             // Open the directory
-            DIR* dir = opendir(path);
+            DIR *dir = opendir(path);
             if (dir == NULL) {
                 printf("Error opening directory '%s'\n", path);
                 return;
             }
 
             // Read directory contents
-            struct dirent* entry;
+            struct dirent *entry;
             while ((entry = readdir(dir)) != NULL) {
                 printf("%s\n", entry->d_name);
             }
@@ -123,12 +163,12 @@ void parseAndExecuteCommand(char* input) {
         } else {
             printf("Invalid syntax\n");
         }
-    }else if (strstr(input, "برو") != NULL) {
+    } else if (strstr(input, "برو") != NULL) {
         // Tokenize input to extract the directory path
-        char* token = strtok(input, " برو\n");
+        char *token = strtok(input, " برو\n");
 
         if (token != NULL) {
-            char* path = token;
+            char *path = token;
 
             // Change directory
             if (chdir(path) != 0) {
@@ -139,13 +179,13 @@ void parseAndExecuteCommand(char* input) {
         }
     } else if (strstr(input, "محتوا") != NULL) {
         // Tokenize input to extract the file path
-        char* token = strtok(input, " محتوا\n");
+        char *token = strtok(input, " محتوا\n");
 
         if (token != NULL) {
-            char* path = token;
+            char *path = token;
 
             // Open the file
-            FILE* file = fopen(path, "r");
+            FILE *file = fopen(path, "r");
             if (file == NULL) {
                 printf("Error opening file '%s'\n", path);
                 return;
