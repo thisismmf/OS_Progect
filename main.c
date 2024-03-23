@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <dirent.h>
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_USERNAME_LENGTH 64
@@ -45,7 +46,7 @@ void printPrompt() {
 
 void parseAndExecuteCommand(char* input) {
     // Check if the command is to define a local variable
-     if (strstr(input, "تنظیمات") != NULL) {
+    if (strstr(input, "تنظیمات") != NULL) {
         // Tokenize input to extract the variable name
         char* token = strtok(input, " تنظیمات\n");
 
@@ -68,7 +69,7 @@ void parseAndExecuteCommand(char* input) {
         } else {
             printf("Invalid syntax\n");
         }
-    }else if (strstr(input, "تنظیم") != NULL) {
+    } else if (strstr(input, "تنظیم") != NULL) {
         // Tokenize input to separate the variable name and value
         char* token = strtok(input, " =تنظیم\n");
 
@@ -97,7 +98,46 @@ void parseAndExecuteCommand(char* input) {
         } else {
             printf("Invalid syntax\n");
         }
-    }else {
+    } else if (strstr(input, "فهرست") != NULL) {
+        // Tokenize input to extract the directory path
+        char* token = strtok(input, " فهرست\n");
+
+        if (token != NULL) {
+            char* path = token;
+
+            // Open the directory
+            DIR* dir = opendir(path);
+            if (dir == NULL) {
+                printf("Error opening directory '%s'\n", path);
+                return;
+            }
+
+            // Read directory contents
+            struct dirent* entry;
+            while ((entry = readdir(dir)) != NULL) {
+                printf("%s\n", entry->d_name);
+            }
+
+            // Close the directory
+            closedir(dir);
+        } else {
+            printf("Invalid syntax\n");
+        }
+    }else if (strstr(input, "برو") != NULL) {
+        // Tokenize input to extract the directory path
+        char* token = strtok(input, " برو\n");
+
+        if (token != NULL) {
+            char* path = token;
+
+            // Change directory
+            if (chdir(path) != 0) {
+                printf("Error changing directory to '%s'\n", path);
+            }
+        } else {
+            printf("Invalid syntax\n");
+        }
+    } else {
         printf("Invalid command\n");
     }
 }
