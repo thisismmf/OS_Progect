@@ -44,33 +44,61 @@ void printPrompt() {
 }
 
 void parseAndExecuteCommand(char* input) {
-    // Tokenize input to separate the variable name and value
-    char* token = strtok(input, " =تنظیم\n");
+    // Check if the command is to define a local variable
+     if (strstr(input, "تنظیمات") != NULL) {
+        // Tokenize input to extract the variable name
+        char* token = strtok(input, " تنظیمات\n");
 
-    if (token != NULL) {
-        char* name = token;
-
-        // Find the index of the equal sign
-        token = strtok(NULL, " =تنظیم\n");
         if (token != NULL) {
-            char* value = token;
+            char* name = token;
 
-            // Store the variable
-            if (numVariables < MAX_VARIABLES) {
-                strncpy(variables[numVariables].name, name, sizeof(variables[numVariables].name) - 1);
-                strncpy(variables[numVariables].value, value, sizeof(variables[numVariables].value) - 1);
-                variables[numVariables].name[sizeof(variables[numVariables].name) - 1] = '\0';
-                variables[numVariables].value[sizeof(variables[numVariables].value) - 1] = '\0';
-                numVariables++;
-                printf("متغیر %s به مقدار %s تنظیم شد\n", name, value);
-            } else {
-                printf("به بیشینه مقدار متغیر ها رسیدیم\n");
+            // Search for the variable by name
+            int found = 0;
+            for (int i = 0; i < numVariables; i++) {
+                if (strcmp(variables[i].name, name) == 0) {
+                    printf("%s\n", variables[i].value);
+                    found = 1;
+                    break;
+                }
+            }
+
+            if (!found) {
+                printf("Variable '%s' not found\n", name);
             }
         } else {
-            printf("دستور نامعتبر\n");
+            printf("Invalid syntax\n");
         }
-    } else {
-        printf("دستور نامعتبر\n");
+    }else if (strstr(input, "تنظیم") != NULL) {
+        // Tokenize input to separate the variable name and value
+        char* token = strtok(input, " =تنظیم\n");
+
+        if (token != NULL) {
+            char* name = token;
+
+            // Find the index of the equal sign
+            token = strtok(NULL, " =تنظیم\n");
+            if (token != NULL) {
+                char* value = token;
+
+                // Store the variable
+                if (numVariables < MAX_VARIABLES) {
+                    strncpy(variables[numVariables].name, name, sizeof(variables[numVariables].name) - 1);
+                    strncpy(variables[numVariables].value, value, sizeof(variables[numVariables].value) - 1);
+                    variables[numVariables].name[sizeof(variables[numVariables].name) - 1] = '\0';
+                    variables[numVariables].value[sizeof(variables[numVariables].value) - 1] = '\0';
+                    numVariables++;
+                    printf("Variable %s set to %s\n", name, value);
+                } else {
+                    printf("Maximum number of variables reached\n");
+                }
+            } else {
+                printf("Invalid syntax\n");
+            }
+        } else {
+            printf("Invalid syntax\n");
+        }
+    }else {
+        printf("Invalid command\n");
     }
 }
 
@@ -84,13 +112,7 @@ int main() {
             break; // Exit if user enters EOF (Ctrl+D)
         }
 
-        // Check if the command is to define a local variable
-        if (strstr(input, "تنظیم") != NULL) {
-            parseAndExecuteCommand(input);
-        } else {
-            // Process other commands
-            printf("شما وارد کردید : %s", input);
-        }
+        parseAndExecuteCommand(input);
     }
 
     return 0;
