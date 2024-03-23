@@ -83,6 +83,27 @@ void runForegroundCommand(const char *command) {
     }
 }
 
+void redirectOutputToFile(const char *filename, const char *command) {
+    // Check if the command is valid
+    if (system(command) != 0) {
+        printf("Invalid command, unable to redirect output to file\n");
+        return;
+    }
+
+    // Formulate the command to redirect output to the file
+    char redirectCommand[1024];
+    sprintf(redirectCommand, "%s > %s", command, filename);
+
+    // Execute the command with output redirected to the file
+    int status = system(redirectCommand);
+
+    if (status == -1) {
+        printf("Failed to execute command\n");
+    } else {
+        printf("Output redirected to file '%s'\n", filename);
+    }
+}
+
 void parseAndExecuteCommand(char *input) {
     // Check if the command is to define a local variable
     if (strstr(input, "تنظیمات") != NULL) {
@@ -186,7 +207,26 @@ void parseAndExecuteCommand(char *input) {
         }else {
             printf("Invalid syntax\n");
         }
-    }else if (strstr(input, "برو") != NULL) {
+    }else if (strstr(input, "<") != NULL) {
+        // Tokenize input to extract the file name and command
+        char* token = strtok(input, " <\n");
+
+        if (token != NULL) {
+            char* filename = token;
+
+            token = strtok(NULL, "<\n");
+            if (token != NULL) {
+                char* command = token;
+
+                // Redirect output of the command to the file
+                redirectOutputToFile(filename, command);
+            } else {
+                printf("Invalid syntax\n");
+            }
+        } else {
+            printf("Invalid syntax\n");
+        }
+    } else if (strstr(input, "برو") != NULL) {
         // Tokenize input to extract the directory path
         char *token = strtok(input, " برو\n");
 

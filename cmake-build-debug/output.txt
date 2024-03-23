@@ -1,0 +1,7 @@
+CMakeCache.txt
+CMakeFiles
+OS_Project
+Testing
+build.ninja
+cmake_install.cmake
+output.txt
