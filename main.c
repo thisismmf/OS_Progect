@@ -72,6 +72,17 @@ void listDirectory(const char *path) {
     closedir(dir);
 }
 
+void runForegroundCommand(const char *command) {
+    // Execute the command in the foreground
+    int status = system(command);
+
+    if (status == -1) {
+        printf("Failed to execute command\n");
+    } else {
+        printf("Command executed in the foreground\n");
+    }
+}
+
 void parseAndExecuteCommand(char *input) {
     // Check if the command is to define a local variable
     if (strstr(input, "تنظیمات") != NULL) {
@@ -163,7 +174,19 @@ void parseAndExecuteCommand(char *input) {
         } else {
             printf("Invalid syntax\n");
         }
-    } else if (strstr(input, "برو") != NULL) {
+    }else if (strstr(input, "&") != NULL) {
+        // Tokenize input to extract the command
+        char* token = strtok(input, " &\n");
+
+        if (token != NULL) {
+            char* command = token;
+
+            // Run the command in the foreground
+            runForegroundCommand(command);
+        }else {
+            printf("Invalid syntax\n");
+        }
+    }else if (strstr(input, "برو") != NULL) {
         // Tokenize input to extract the directory path
         char *token = strtok(input, " برو\n");
 
