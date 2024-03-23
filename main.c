@@ -137,6 +137,31 @@ void parseAndExecuteCommand(char* input) {
         } else {
             printf("Invalid syntax\n");
         }
+    } else if (strstr(input, "محتوا") != NULL) {
+        // Tokenize input to extract the file path
+        char* token = strtok(input, " محتوا\n");
+
+        if (token != NULL) {
+            char* path = token;
+
+            // Open the file
+            FILE* file = fopen(path, "r");
+            if (file == NULL) {
+                printf("Error opening file '%s'\n", path);
+                return;
+            }
+
+            // Read and print file contents
+            char line[1024];
+            while (fgets(line, sizeof(line), file) != NULL) {
+                printf("%s", line);
+            }
+
+            // Close the file
+            fclose(file);
+        } else {
+            printf("Invalid syntax\n");
+        }
     } else {
         printf("Invalid command\n");
     }
