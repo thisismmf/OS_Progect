@@ -104,6 +104,69 @@ void redirectOutputToFile(const char *filename, const char *command) {
     }
 }
 
+char* replaceLocalVariables(const char *input) {
+    // Allocate memory for the modified input string
+    char *modifiedInput = (char *)malloc(strlen(input) + 1);
+    if (modifiedInput == NULL) {
+        perror("Memory allocation error");
+        exit(EXIT_FAILURE);
+    }
+
+    // Copy the input string to the modified input string
+    strcpy(modifiedInput, input);
+
+    // Search for local variables prefixed with '$' and replace them
+    char *token = strtok(modifiedInput, " $");
+    while (token != NULL) {
+        // Check if the token starts with '$'
+        if (token[0] == '$') {
+            // Extract the variable name (without '$')
+            char* varName = token + 1;
+
+            // Search for the variable by name
+            for (int i = 0; i < numVariables; i++) {
+                if (strcmp(variables[i].name, varName) == 0) {
+                    // Replace the variable with its value
+                    strcpy(token, variables[i].value);
+                    break;
+                }
+            }
+        }
+
+        // Find the next token
+        token = strtok(NULL, " $");
+    }
+
+    return modifiedInput;
+}
+
+void displaySystemInformation() {
+    // Display processor model
+    printf("Processor Model:\n");
+    system("sysctl -n machdep.cpu.brand_string");
+
+    // Display number of processor cores
+    printf("Number of Processor Cores:\n");
+    system("sysctl -n hw.ncpu");
+
+    // Display memory information
+    printf("Memory Information:\n");
+    system("sysctl -n hw.memsize");
+
+    // Display used and free memory size
+    printf("Used and Free Memory Size:\n");
+    system("vm_stat | grep 'Pages active' | awk '{print $3 * 4096 / (1024 * 1024) \" MB Used\"}'");
+    system("vm_stat | grep 'Pages free' | awk '{print $3 * 4096 / (1024 * 1024) \" MB Free\"}'");
+
+    // Display kernel version
+    printf("Kernel Version:\n");
+    system("uname -r");
+
+    // Display user interface type
+    printf("User Interface Type:\n");
+    system("echo $XDG_SESSION_TYPE");
+}
+
 void parseAndExecuteCommand(char *input) {
     // Check if the command is to define a local variable
     if (strstr(input, "تنظیمات") != NULL) {
@@ -195,7 +258,7 @@ void parseAndExecuteCommand(char *input) {
         } else {
             printf("Invalid syntax\n");
         }
-    }else if (strstr(input, "&") != NULL) {
+    } else if (strstr(input, "&") != NULL) {
         // Tokenize input to extract the command
         char* token = strtok(input, " &\n");
 
@@ -204,10 +267,10 @@ void parseAndExecuteCommand(char *input) {
 
             // Run the command in the foreground
             runForegroundCommand(command);
-        }else {
+        } else {
             printf("Invalid syntax\n");
         }
-    }else if (strstr(input, "<") != NULL) {
+    } else if (strstr(input, "<") != NULL) {
         // Tokenize input to extract the file name and command
         char* token = strtok(input, " <\n");
 
@@ -265,6 +328,21 @@ void parseAndExecuteCommand(char *input) {
         } else {
             printf("Invalid syntax\n");
         }
+    } else if (strstr(input, "وضعیت پردازه تعاملی") != NULL) {
+        // Display interactive processes
+        system("ps -eo pid,tty,comm | grep -v '?'");
+    } else if (strstr(input, "وضعیت پردازه غیر تعاملی") != NULL) {
+        // Display non-interactive processes
+        system("ps -eo pid,tty,comm | grep '?'");
+    } else if (strstr(input, "وضعیت پردازه ریسه") != NULL) {
+        // Display programs with multiple threads
+        system("ps -eo pid,nlwp,comm | awk '$2 > 1'");
+    } else if (strstr(input, "اطلاعات سیستم") != NULL) {
+        // Display system information
+        displaySystemInformation();
+    } else if (strstr(input, "وضعیت پردازه") != NULL) {
+        // Display the list of processes in descending order of priority
+        system("ps -eo pid,pri,comm | sort -k 2 -nr");
     } else {
         printf("Invalid command\n");
     }
