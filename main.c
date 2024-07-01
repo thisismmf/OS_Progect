@@ -3,6 +3,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <dirent.h>
+#include <time.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_USERNAME_LENGTH 64
@@ -16,6 +21,42 @@ typedef struct {
 
 Variable variables[MAX_VARIABLES];
 int numVariables = 0;
+
+typedef struct {
+    unsigned long long rx_bytes;
+    unsigned long long tx_bytes;
+    unsigned int rx_sessions;
+    unsigned int tx_sessions;
+    time_t start_time;
+} NetworkStats;
+
+NetworkStats netStats;
+
+void initNetworkStats() {
+    netStats.rx_bytes = 0;
+    netStats.tx_bytes = 0;
+    netStats.rx_sessions = 0;
+    netStats.tx_sessions = 0;
+    netStats.start_time = time(NULL);
+}
+
+void updateNetworkStats() {
+    // Simulate network stats update (should be replaced with real data gathering)
+    netStats.rx_bytes += rand() % 1000;
+    netStats.tx_bytes += rand() % 1000;
+    netStats.rx_sessions += rand() % 10;
+    netStats.tx_sessions += rand() % 10;
+}
+
+void displayNetworkStats() {
+    updateNetworkStats();
+
+    printf("Volume of incoming traffic: %llu bytes\n", netStats.rx_bytes);
+    printf("Volume of outgoing traffic: %llu bytes\n", netStats.tx_bytes);
+    printf("Number of incoming sessions: %u\n", netStats.rx_sessions);
+    printf("Number of outgoing sessions: %u\n", netStats.tx_sessions);
+    printf("Activity duration: %ld seconds\n", time(NULL) - netStats.start_time);
+}
 
 // Function to replace the last n characters of a string with '_'
 void maskSensitiveInfo(char *str, int n) {
@@ -343,12 +384,18 @@ void parseAndExecuteCommand(char *input) {
     } else if (strstr(input, "وضعیت پردازه") != NULL) {
         // Display the list of processes in descending order of priority
         system("ps -eo pid,pri,comm | sort -k 2 -nr");
+    } else if (strstr(input, "وضعیت شبکه") != NULL) {
+        // Display network status
+        displayNetworkStats();
     } else {
         printf("Invalid command\n");
     }
 }
 
 int main() {
+    // Initialize network statistics
+    initNetworkStats();
+
     while (1) {
         printPrompt(); // Print prompt before each command
 
