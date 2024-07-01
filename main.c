@@ -4,10 +4,6 @@
 #include <string.h>
 #include <dirent.h>
 #include <time.h>
-#include <net/if.h>
-#include <sys/ioctl.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_USERNAME_LENGTH 64
@@ -28,6 +24,7 @@ typedef struct {
     unsigned int rx_sessions;
     unsigned int tx_sessions;
     time_t start_time;
+    int network_connected;
 } NetworkStats;
 
 NetworkStats netStats;
@@ -38,14 +35,17 @@ void initNetworkStats() {
     netStats.rx_sessions = 0;
     netStats.tx_sessions = 0;
     netStats.start_time = time(NULL);
+    netStats.network_connected = 1; // Simulate network is connected initially
 }
 
 void updateNetworkStats() {
     // Simulate network stats update (should be replaced with real data gathering)
-    netStats.rx_bytes += rand() % 1000;
-    netStats.tx_bytes += rand() % 1000;
-    netStats.rx_sessions += rand() % 10;
-    netStats.tx_sessions += rand() % 10;
+    if (netStats.network_connected) {
+        netStats.rx_bytes += rand() % 1000;
+        netStats.tx_bytes += rand() % 1000;
+        netStats.rx_sessions += rand() % 10;
+        netStats.tx_sessions += rand() % 10;
+    }
 }
 
 void displayNetworkStats() {
@@ -62,6 +62,16 @@ void resetNetworkStats() {
     initNetworkStats();
     printf("Network statistics have been reset.\n");
     displayNetworkStats();
+}
+
+void disconnectNetwork() {
+    // Simulate network disconnection
+    if (netStats.network_connected) {
+        netStats.network_connected = 0;
+        printf("Network has been disconnected.\n");
+    } else {
+        printf("Network is already disconnected.\n");
+    }
 }
 
 // Function to replace the last n characters of a string with '_'
@@ -396,6 +406,9 @@ void parseAndExecuteCommand(char *input) {
     } else if (strstr(input, "راە اندازی مجدد دیدە بانی") != NULL) {
         // Reset and display network statistics
         resetNetworkStats();
+    } else if (strstr(input, "قطع ارتباط") != NULL) {
+        // Disconnect the network
+        disconnectNetwork();
     } else {
         printf("Invalid command\n");
     }
