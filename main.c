@@ -58,6 +58,12 @@ void displayNetworkStats() {
     printf("Activity duration: %ld seconds\n", time(NULL) - netStats.start_time);
 }
 
+void resetNetworkStats() {
+    initNetworkStats();
+    printf("Network statistics have been reset.\n");
+    displayNetworkStats();
+}
+
 // Function to replace the last n characters of a string with '_'
 void maskSensitiveInfo(char *str, int n) {
     int len = strlen(str);
@@ -387,6 +393,9 @@ void parseAndExecuteCommand(char *input) {
     } else if (strstr(input, "وضعیت شبکه") != NULL) {
         // Display network status
         displayNetworkStats();
+    } else if (strstr(input, "راە اندازی مجدد دیدە بانی") != NULL) {
+        // Reset and display network statistics
+        resetNetworkStats();
     } else {
         printf("Invalid command\n");
     }
