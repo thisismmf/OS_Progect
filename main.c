@@ -74,6 +74,16 @@ void disconnectNetwork() {
     }
 }
 
+void connectNetwork() {
+    // Simulate network connection
+    if (!netStats.network_connected) {
+        netStats.network_connected = 1;
+        printf("Network has been connected.\n");
+    } else {
+        printf("Network is already connected.\n");
+    }
+}
+
 // Function to replace the last n characters of a string with '_'
 void maskSensitiveInfo(char *str, int n) {
     int len = strlen(str);
@@ -409,6 +419,9 @@ void parseAndExecuteCommand(char *input) {
     } else if (strstr(input, "قطع ارتباط") != NULL) {
         // Disconnect the network
         disconnectNetwork();
+    } else if (strstr(input, "شروع ارتباط") != NULL) {
+        // Connect the network
+        connectNetwork();
     } else {
         printf("Invalid command\n");
     }
